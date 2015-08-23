@@ -5,6 +5,10 @@
 "dependencies": {
 	"edimax-smartplug": "0.0.8"
 },
+"repository" :
+  { "type" : "git"
+  , "url" : "https://github.com/mapero/node-red-contrib-smartplug.git"
+},
 "license": "MIT",
 "keywords": [ "node-red", "edimax", "smartplug", "wifi"],
 "node-red" : {
@@ -14,7 +18,7 @@
 },
 "author": {
 "name": "Jochen Scheib",
-"email": "webmaster@mapero.de",
+"email": "mail@jochen-scheib.de",
 "url": "www.jochen-scheib.de"
 }
 }

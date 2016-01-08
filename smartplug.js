@@ -37,27 +37,28 @@ module.exports = function(RED) {
 		node.topic = n.topic;
 		node.timer = {};
 
-		node.promises = [];
-		node.indexes = [];
-
-		if (n.deviceinfo){
-			 node.promises.push(edimax.getDeviceInfo(node.device.options));
-			 node.indexes.push("deviceinfo");
-		}
-		if (n.schedule) {
-			node.promises.push(edimax.getSchedule(node.device.options));
-			node.indexes.push("schedule");
-		}
-		if (n.status) {
-			node.promises.push(edimax.getStatusValues(true, node.device.options));
-			node.indexes.push("status");
-		}
 
 		function repeating() {
-			Promise.all(node.promises).then(function(result) {
+			promises = [];
+			indexes = [];
+
+			if (n.deviceinfo){
+				 promises.push(edimax.getDeviceInfo(node.device.options));
+				 indexes.push("deviceinfo");
+			}
+			if (n.schedule) {
+				promises.push(edimax.getSchedule(node.device.options));
+				indexes.push("schedule");
+			}
+			if (n.status) {
+				promises.push(edimax.getStatusValues(true, node.device.options));
+				indexes.push("status");
+			}
+
+			Promise.all(promises).then(function(result) {
 				var msg = new Object();
 				for (var index in result) {
-					msg[node.indexes[index]] = result[index];
+					msg[indexes[index]] = result[index];
 				}
 				node.send({topic: node.topic ? node.topic : undefined, payload: msg});
 				node.timer = setTimeout(repeating, node.interval);

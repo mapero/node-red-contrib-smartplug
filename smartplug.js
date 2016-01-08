@@ -39,6 +39,7 @@ module.exports = function(RED) {
 
 		node.promises = [];
 		node.indexes = [];
+
 		if (n.deviceinfo){
 			 node.promises.push(edimax.getDeviceInfo(node.device.options));
 			 node.indexes.push("deviceinfo");
@@ -84,20 +85,38 @@ module.exports = function(RED) {
 		node.topic = n.topic;
 
 		node.on("input", function(msg) {
-			if(typeof msg.payload === 'boolean') {
-				edimax.setSwitchState(msg.payload, node.device.options).then(function(result) {
-					if(node.response) {
-						edimax.getSwitchState(node.device.options).then(function (state) {
-							node.send({topic: node.topic, payload: state});
-						}).catch(function(e) {
-							node.error(e,{});
-						});
-					}
-				}).catch(function(e) {
-					node.error(e,{});
-				});
 
+			var statement = false;
+
+			if(typeof msg.payload === 'boolean') {
+				statement = msg.payload;
+			} else if (typeof msg.payload === 'string') {
+				if (msg.payload.toLowerCase() === 'on' || msg.payload.toLowerCase() === 'true') {
+					statement = true;
+				} else if (msg.payload.toLowerCase() === 'off' || msg.payload.toLowerCase() === 'false') {
+					statement = false;
+				}
+				else {
+					node.error("Invalid Payload");
+					return;
+				}
+			} else {
+				node.error("Invalid payload type");
+				return;
 			}
+
+			edimax.setSwitchState(statement, node.device.options).then(function(result) {
+				if(node.response) {
+					edimax.getSwitchState(node.device.options).then(function (state) {
+						node.send({topic: node.topic, payload: state});
+					}).catch(function(e) {
+						node.error(e,{});
+					});
+				}
+			}).catch(function(e) {
+				node.error(e,{});
+			});
+
 		});
 
 	};

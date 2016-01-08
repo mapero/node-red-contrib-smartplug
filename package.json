@@ -5,6 +5,10 @@
 "dependencies": {
 	"edimax-smartplug": "0.0.8"
 },
+"engines":
+{
+	"node": ">=5.0.0"
+},
 "repository" :
   { "type" : "git"
   , "url" : "https://github.com/mapero/node-red-contrib-smartplug.git"

@@ -1,4 +1,5 @@
-var edimax = require("edimax-smartplug");
+var edimax = require("edimax-smartplug"),
+		Promise = require("bluebird");
 
 module.exports = function(RED) {
 

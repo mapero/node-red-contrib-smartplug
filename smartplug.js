@@ -56,11 +56,19 @@ module.exports = function(RED) {
 			}
 
 			Promise.all(promises).then(function(result) {
-				var msg = new Object();
+				var payload = new Object();
 				for (var index in result) {
-					msg[indexes[index]] = result[index];
+					payload[indexes[index]] = result[index];
 				}
-				node.send({topic: node.topic ? node.topic : undefined, payload: msg});
+				if(n.status && n.cost) {
+					payload.status.cost = {
+						day: payload.status.day * n.costFactor,
+						week: payload.status.week * n.costFactor,
+						month: payload.status.month * n.costFactor,
+						unit: n.costUnit
+					};
+				}
+				node.send({topic: node.topic ? node.topic : undefined, payload: payload});
 				node.timer = setTimeout(repeating, node.interval);
 			}).catch(function(e) {
 				node.error(e,{});

@@ -55,41 +55,83 @@
       interval: {value:1000, required: true, validate: RED.validators.number() },
       deviceinfo: {value: true},
       schedule: {value: true},
-      status: {value: true}
+      status: {value: true},
+      cost: {value: false},
+      costFactor: {value: 0.2},
+      costUnit: {value: "$"}
     },
     inputs:0,
     outputs:1,
     icon: "smartplug.png",
     label: function() {
       return this.name ? this.name : "Edimax Smartplug";
+    },
+    oneditprepare: function() {
+      function updateStatusOptions() {
+        if($('#node-input-status').is(':checked')) {
+          $('#node-input-cost').prop('disabled', false);
+          $('#node-input-cost').next().css("color", "");
+        } else {
+          $('#node-input-cost').prop('disabled', true);
+          $('#node-input-cost').next().css("color", "#aaa");
+        }
+        if($('#node-input-cost').is(':checked') && $('#node-input-status').is(':checked')) {
+          $('#node-input-costFactor').prop('disabled', false);
+          $('#node-input-costUnit').prop('disabled', false);
+          $('#node-input-costFactor').prev().css("color", "");
+          $('#node-input-costUnit').prev().css("color", "");
+        } else {
+          $('#node-input-costFactor').prop('disabled', true);
+          $('#node-input-costUnit').prop('disabled', true);
+          $('#node-input-costFactor').prev().css("color", "#aaa");
+          $('#node-input-costUnit').prev().css("color", "#aaa");
+        }
+      }
+      updateStatusOptions();
+      $('#node-input-cost').on('click', function() {
+        updateStatusOptions();
+      });
+      $('#node-input-status').on('click', function() {
+        updateStatusOptions();
+      });
     }
   });
 </script>
 
 <script type="text/x-red" data-template-name="smartplug-in">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-bookmark"></i>Name</label>
+        <label for="node-input-name"><i class="fa fa-bookmark"></i> Name</label>
         <input type="text" id="node-input-name" />
     </div>
     <div class="form-row">
-        <label for="node-input-topic"><i class="icon-bookmark"></i>Topic</label>
+        <label for="node-input-topic"><i class="fa fa-hashtag"></i> Topic</label>
         <input type="text" id="node-input-topic" />
     </div>
     <div class="form-row">
-        <label for="node-input-device"><i class="icon-bookmark"></i>Device</label>
+        <label for="node-input-device"><i class="fa fa-usb"></i> Device</label>
         <input type="text" id="node-input-device" />
     </div>
     <div class="form-row">
-        <label for="node-input-interval"><i class="icon-bookmark"></i>Interval(ms)</label>
+        <label for="node-input-interval"><i class="fa fa-clock-o"></i> Interval(ms)</label>
         <input type="text" id="node-input-interval" />
     </div>
     <div class="form-row">
-      <label><i class="fa fa-external-link"></i>Outputs</label>
+      <label><i class="fa fa-external-link"></i> Outputs</label>
       <input type="checkbox" id="node-input-deviceinfo" style="display: inline-block; width: auto; vertical-align: top;">Device infomations<br/>
       <label>&nbsp;</label>
       <input type="checkbox" id="node-input-schedule" style="display: inline-block; width: auto; vertical-align: top;">Schedule<br/>
       <label>&nbsp;</label>
       <input type="checkbox" id="node-input-status" style="display: inline-block; width: auto; vertical-align: top;">Status<br/>
+      <label>&nbsp;</label>
+      <input type="checkbox" id="node-input-cost" style="display: inline-block; width: auto; vertical-align: top;">Costs<br/>
+    </div>
+    <div class="form-row">
+      <label for="node-input-costFactor"><i class="fa fa-asterisk"></i> Cost factor</label>
+      <input type="text" id="node-input-costFactor" />
+    </div>
+    <div class="form-row">
+      <label for="node-input-costUnit"><i class="fa fa-dollar"></i> Unit</label>
+      <input type="text" id="node-input-costUnit" />
     </div>
 </script>
 

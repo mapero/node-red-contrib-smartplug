@@ -1,4 +1,6 @@
 # Edimax Smartplug for Node-RED
+
+[![Join the chat at https://gitter.im/mapero/node-red-contrib-smartplug](https://badges.gitter.im/mapero/node-red-contrib-smartplug.svg)](https://gitter.im/mapero/node-red-contrib-smartplug?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Easily integrate your edimax smartplug into your node-RED flow.
 ## Installation
 Just install this plugin in your Node-RED folder by using npm:

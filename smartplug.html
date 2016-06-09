@@ -13,11 +13,62 @@
     },
     label: function() {
       return this.name ? this.name : this.host;
+    },
+    oneditprepare: function() {
+
+      var devices = [];
+
+      //Toggle between select and input
+      $('#node-config-input-discover').click(function() {
+        RED.notify("Search devices. This will take some time.");
+        $.get( 'smartplug/devices')
+          .done( function(data) {
+            devices = JSON.parse(data);
+            if(!Array.isArray(devices) || devices.length <= 0) {
+              RED.notify("No smartplug discovered", "warn");
+            } else {
+              RED.notify("Found "+devices.length+" devices!", "info");
+            }
+            devices.forEach(function(device, index) {
+              $('#node-config-input-devices-group').append('<option value="' + index + '">' + device.displayName + '</option>');
+            });
+          })
+          .fail(function() {
+            RED.notify("Something went wrong.", "error");
+          });
+      });
+
+      $('#node-config-input-devices').change(function() {
+        var device = $('#node-config-input-devices').val();
+        if( device === "manuel") {
+          $('#node-config-input-host').prop('disabled', false);
+          $('#node-config-input-name').prop('disabled', false);
+        } else {
+          $('#node-config-input-host').prop('disabled', true);
+          $('#node-config-input-name').prop('disabled', true);
+          $('#node-config-input-host').val(devices[device].addr);
+          $('#node-config-input-name').val(devices[device].displayName);
+        }
+      });
     }
   });
 </script>
 
 <script type="text/x-red" data-template-name="smartplug-device">
+    <div class="form-row">
+      <label for="node-config-input-devices"><i class="fa fa-comments"></i> Devices</label>
+      <select id="node-config-input-devices" style="width: 60%;">
+        <optgroup label="manual">
+          <option value="manuel">manual</option>
+        </optgroup>
+        <optgroup id="node-config-input-devices-group" label="scanned">
+        </optgroup>
+      </select>
+      <a id="node-config-input-discover" class="editor-button"><i class="fa fa-refresh"></i></a>
+    </div>
+    <div class="form-row">
+
+    </div>
     <div class="form-row">
         <label for="node-config-input-name"><i class="icon-bookmark"></i>Name</label>
         <input type="text" id="node-config-input-name" />

@@ -5,6 +5,17 @@ var edimax = require("edimax-smartplug"),
 
 module.exports = function(RED) {
 
+	RED.httpAdmin.get('/smartplug/devices', function(req, res, next) {
+		edimax.discoverDevices({
+			timeout: 5000,
+			address: "255.255.255.255"
+		}).then(function(results) {
+			res.end(JSON.stringify(results));
+		}).catch(function(e) {
+			res.end(JSON.stringify(e));
+		});
+	});
+
 	function SmartplugDeviceNode(n) {
 		RED.nodes.createNode(this,n);
 		var node = this;

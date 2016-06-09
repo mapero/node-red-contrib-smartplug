@@ -8,8 +8,9 @@ module.exports = function(RED) {
 	function SmartplugDeviceNode(n) {
 		RED.nodes.createNode(this,n);
 		var node = this;
+		var isError = false;
 		node.host = n.host;
-		node.retry = n.retry * 1000;
+		node.heartbeat = n.heartbeat ? n.heartbeat * 1000 : 5000;
 
 		node.options = {
 			timeout: parseFloat(n.timeout * 1000),
@@ -17,23 +18,51 @@ module.exports = function(RED) {
 			host: node.host
 		};
 
+		//Set credentials
 		if(this.credentials)
 		{
 			node.options.username = this.credentials.username;
 			node.options.password = this.credentials.password;
 		}
 
+		//Emit status changes to all child nodes
 		node.setStatus = function(status) {
-			if(status === "connected") {
-				node.status = {fill:"green",shape:"dot",text:"connected"};
-			} else if (status === "disconnected") {
-				node.status = {fill:"red",shape:"ring",text:"disconnected"};
-			} else if (status === "initializing") {
-				node.status = {fill:"yellow",shape:"ring",text:"initializing"};
+			if (status !== node.status.text) {
+				node.log("Status changed: "+ node.status.text + "-->" + status);
+				if(status === "connected") {
+					node.status = {fill:"green",shape:"dot",text:"connected"};
+				} else if (status === "disconnected") {
+					node.status = {fill:"red",shape:"ring",text:"disconnected"};
+				} else if (status === "initializing") {
+					node.status = {fill:"yellow",shape:"ring",text:"initializing"};
+				}
+				node.emit("statusChanged", node.status);
 			}
-			node.emit("statusChanged", node.status);
 		};
 		node.setStatus("initializing");
+
+		//Check connection
+		function checkConnection() {
+			edimax.getDeviceInfo(node.options).then(function(result) {
+				//We received a valid answer, device is connected
+				isError = false;
+				node.setStatus("connected");
+			}).catch(function(e) {
+				//Error, means device is not reachable
+				if(!isError) {
+					isError = true;
+					node.error(e);
+				}
+				node.setStatus("disconnected");
+			}).done();
+		}
+		node.timer = setInterval(checkConnection, node.heartbeat);
+
+		node.on("close", function() {
+			if(node.timer) {
+				clearInterval(node.timer);
+			}
+		});
 
 	}
 	RED.nodes.registerType("smartplug-device", SmartplugDeviceNode, {
@@ -55,6 +84,13 @@ module.exports = function(RED) {
 		function repeating() {
 			promises = [];
 			indexes = [];
+
+			node.timer = setTimeout(repeating, node.interval);
+
+			// Cancel if not connected
+			if(node.device.status.text !== "connected") {
+				return;
+			}
 
 			if (n.deviceinfo){
 				 promises.push(edimax.getDeviceInfo(node.device.options));
@@ -83,11 +119,8 @@ module.exports = function(RED) {
 					};
 				}
 				node.send({topic: node.topic ? node.topic : undefined, payload: payload});
-				node.timer = setTimeout(repeating, node.interval);
 				node.device.setStatus("connected");
 			}).catch(function(e) {
-				node.error(e,{});
-				node.timer = setTimeout(repeating, node.device.retry);
 				node.device.setStatus("disconnected");
 			});
 
@@ -101,7 +134,9 @@ module.exports = function(RED) {
 
 		//Clear timer and remove listener when the node is deleted
 		node.on("close", function(){
-			clearTimeout(node.timer);
+			if(node.timer) {
+				clearTimeout(node.timer);
+			}
 			node.device.removeListener("statusChanged", refreshStatus);
 		});
 
@@ -121,6 +156,12 @@ module.exports = function(RED) {
 		node.on("input", function(msg) {
 
 			var statement = false;
+
+			//Cancel if not connected
+			if(node.device.status.text !== "connected")
+			{
+				return;
+			}
 
 			if(typeof msg.payload === 'boolean') {
 				statement = msg.payload;
@@ -149,7 +190,6 @@ module.exports = function(RED) {
 				}
 				node.device.setStatus("connected");
 			}).catch(function(e) {
-				node.error(e,{});
 				node.device.setStatus("disconnected");
 			});
 

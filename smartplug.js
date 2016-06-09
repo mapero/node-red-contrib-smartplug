@@ -1,5 +1,7 @@
 var edimax = require("edimax-smartplug"),
-		Promise = require("bluebird");
+		Promise = require("bluebird"),
+		EventEmitter = require('events').EventEmitter;
+
 
 module.exports = function(RED) {
 
@@ -21,7 +23,19 @@ module.exports = function(RED) {
 			node.options.password = this.credentials.password;
 		}
 
-	};
+		node.setStatus = function(status) {
+			if(status === "connected") {
+				node.status = {fill:"green",shape:"dot",text:"connected"};
+			} else if (status === "disconnected") {
+				node.status = {fill:"red",shape:"ring",text:"disconnected"};
+			} else if (status === "initializing") {
+				node.status = {fill:"yellow",shape:"ring",text:"initializing"};
+			}
+			node.emit("statusChanged", node.status);
+		};
+		node.setStatus("initializing");
+
+	}
 	RED.nodes.registerType("smartplug-device", SmartplugDeviceNode, {
 		credentials: {
 			username: {type: "text"},
@@ -33,10 +47,10 @@ module.exports = function(RED) {
 		RED.nodes.createNode(this,n);
 		var node = this;
 		node.device = RED.nodes.getNode(n.device);
+		node.status(node.device.status); // Initialize status
 		node.interval = n.interval;
 		node.topic = n.topic;
 		node.timer = {};
-
 
 		function repeating() {
 			promises = [];
@@ -56,7 +70,7 @@ module.exports = function(RED) {
 			}
 
 			Promise.all(promises).then(function(result) {
-				var payload = new Object();
+				var payload = {};
 				for (var index in result) {
 					payload[indexes[index]] = result[index];
 				}
@@ -70,26 +84,37 @@ module.exports = function(RED) {
 				}
 				node.send({topic: node.topic ? node.topic : undefined, payload: payload});
 				node.timer = setTimeout(repeating, node.interval);
+				node.device.setStatus("connected");
 			}).catch(function(e) {
 				node.error(e,{});
 				node.timer = setTimeout(repeating, node.device.retry);
+				node.device.setStatus("disconnected");
 			});
 
 		}
 
+		// Callback when the status of the connection changed
+		function refreshStatus(status) {
+			node.status(status);
+		}
+		node.device.on("statusChanged", refreshStatus);
+
+		//Clear timer and remove listener when the node is deleted
 		node.on("close", function(){
 			clearTimeout(node.timer);
+			node.device.removeListener("statusChanged", refreshStatus);
 		});
 
 		repeating();
 
-	};
+	}
 	RED.nodes.registerType("smartplug-in", SmartplugInNode);
 
 	function SmartplugOutNode(n) {
 		RED.nodes.createNode(this,n);
 		var node = this;
 		node.device = RED.nodes.getNode(n.device);
+		node.status(node.device.status); // Initialize status
 		node.response = n.response;
 		node.topic = n.topic;
 
@@ -122,12 +147,25 @@ module.exports = function(RED) {
 						node.error(e,{});
 					});
 				}
+				node.device.setStatus("connected");
 			}).catch(function(e) {
 				node.error(e,{});
+				node.device.setStatus("disconnected");
 			});
 
 		});
 
-	};
+		// Callback when the status of the connection changed
+		function refreshStatus(status) {
+			node.status(status);
+		}
+		node.device.on("statusChanged", refreshStatus);
+
+		//Clear timer and remove listener when the node is deleted
+		node.on("close", function(){
+			node.device.removeListener("statusChanged", refreshStatus);
+		});
+
+	}
 	RED.nodes.registerType("smartplug-out", SmartplugOutNode);
-}
+};

@@ -3,7 +3,7 @@
 "version" : "0.1.0",
 "description" : "Node-RED node to access edimax smartplug",
 "dependencies": {
-	"edimax-smartplug": "^0.0.14",
+	"edimax-smartplug": "^0.0.19",
 	"bluebird": "^3.3.3"
 },
 "engines":

@@ -21,11 +21,12 @@ module.exports = function(RED) {
 		var node = this;
 		var isError = false;
 		node.host = n.host;
+		node.name = n.name;
 		node.heartbeat = n.heartbeat ? n.heartbeat * 1000 : 5000;
 
 		node.options = {
 			timeout: parseFloat(n.timeout * 1000),
-			name: 'edimax',
+			name: node.name,
 			host: node.host
 		};
 
@@ -194,7 +195,8 @@ module.exports = function(RED) {
 			edimax.setSwitchState(statement, node.device.options).then(function(result) {
 				if(node.response) {
 					edimax.getSwitchState(node.device.options).then(function (state) {
-						node.send({topic: node.topic, payload: state});
+						msg.payload = state;
+						node.send(msg);
 					}).catch(function(e) {
 						node.error(e,{});
 					});

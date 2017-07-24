@@ -1,4 +1,8 @@
-[![Join the chat at https://gitter.im/mapero/node-red-contrib-smartplug](https://badges.gitter.im/mapero/node-red-contrib-smartplug.svg)](https://gitter.im/mapero/node-red-contrib-smartplug?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![npm version](https://badge.fury.io/js/node-red-contrib-smartplug.svg)](https://badge.fury.io/js/node-red-contrib-smartplug)
+[![Build Status](https://travis-ci.org/bashGroup/node-red-contrib-smartplug.svg?branch=master)](https://travis-ci.org/bashGroup/node-red-contrib-smartplug)
+
+[![NPM](https://nodei.co/npm/node-red-contrib-smartplug.png?compact=true)](https://nodei.co/npm/node-red-contrib-smartplug/)
+
 
 # Edimax Smartplug for Node-RED
 
@@ -34,5 +38,8 @@ The output node lets you change the state of your Edimax Smartplug by sending **
 
 ## Credits
 Jochen Scheib
+
+[![Paypal](https://mapero.github.io/paypal.png)](https://www.paypal.me/JochenScheib/2)
+
 ## License
 MIT

@@ -1,5 +1,5 @@
 [![npm version](https://badge.fury.io/js/node-red-contrib-smartplug.svg)](https://badge.fury.io/js/node-red-contrib-smartplug)
-[![Build Status](https://travis-ci.org/bashGroup/node-red-contrib-smartplug.svg?branch=master)](https://travis-ci.org/bashGroup/node-red-contrib-smartplug)
+[![Build Status](https://travis-ci.org/bashGroup/node-red-contrib-smartplug.svg?branch=master)](https://travis-ci.org/mapero/node-red-contrib-smartplug)
 
 [![NPM](https://nodei.co/npm/node-red-contrib-smartplug.png?compact=true)](https://nodei.co/npm/node-red-contrib-smartplug/)
 

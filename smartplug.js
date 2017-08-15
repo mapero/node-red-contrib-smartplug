@@ -88,14 +88,20 @@ module.exports = function(RED) {
 		RED.nodes.createNode(this,n);
 		var node = this;
 		node.device = RED.nodes.getNode(n.device);
+
+		node.enDeviceInfo = n.deviceinfo;
+		node.enSchedule = n.schedule;
+		node.enStatus = n.status;
+		node.enCost = n.cost;
+		node.costFactor = n.costFactor;
+		node.costUnit = n.costUnit;
+
 		node.status(node.device.status); // Initialize status
 		node.interval = n.interval;
 		node.topic = n.topic;
 		node.timer = {};
 
 		function repeating() {
-			promises = [];
-			indexes = [];
 
 			node.timer = setTimeout(repeating, node.interval);
 
@@ -104,38 +110,35 @@ module.exports = function(RED) {
 				return;
 			}
 
-			if (n.deviceinfo){
-				 promises.push(edimax.getDeviceInfo(node.device.options));
-				 indexes.push("deviceinfo");
+			var promises = {};
+
+			if (node.enDeviceInfo){
+				 promises['deviceinfo'] = edimax.getDeviceInfo(node.device.options);
 			}
-			if (n.schedule) {
-				promises.push(edimax.getSchedule(node.device.options));
-				indexes.push("schedule");
+			if (node.enSchedule) {
+				promises['schedule'] = edimax.getSchedule(node.device.options);
 			}
-			if (n.status) {
-				promises.push(edimax.getStatusValues(true, node.device.options));
-				indexes.push("status");
+			if (node.enStatus) {
+				promises['status'] = edimax.getStatusValues(true, node.device.options);
 			}
 
-			Promise.all(promises).then(function(result) {
-				var payload = {};
-				for (var index in result) {
-					payload[indexes[index]] = result[index];
-				}
-				if(n.status && n.cost) {
-					payload.status.cost = {
-						day: payload.status.day * n.costFactor,
-						week: payload.status.week * n.costFactor,
-						month: payload.status.month * n.costFactor,
-						unit: n.costUnit
+			Promise.props(promises).then(function(result) {
+				if(node.enStatus && node.enCost) {
+					result.cost = {
+						day: result.status.day * node.costFactor,
+						week: result.status.week * node.costFactor,
+						month: result.status.month * node.costFactor,
+						unit: node.costUnit
 					};
 				}
-				node.send({topic: node.topic ? node.topic : undefined, payload: payload});
-				node.device.setStatus("connected");
+				node.send({
+					topic: node.topic,
+					payload: result
+				});
 			}).catch(function(e) {
-				node.device.setStatus("disconnected");
-			});
-
+				node.error(e);
+				node.device.setStatus('disconnected');
+			})
 		}
 
 		// Callback when the status of the connection changed

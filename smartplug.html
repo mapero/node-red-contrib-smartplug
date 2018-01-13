@@ -168,7 +168,7 @@
     </div>
     <div class="form-row">
       <label><i class="fa fa-external-link"></i> Outputs</label>
-      <input type="checkbox" id="node-input-deviceinfo" style="display: inline-block; width: auto; vertical-align: top;">Device infomations<br/>
+      <input type="checkbox" id="node-input-deviceinfo" style="display: inline-block; width: auto; vertical-align: top;">Device information<br/>
       <label>&nbsp;</label>
       <input type="checkbox" id="node-input-schedule" style="display: inline-block; width: auto; vertical-align: top;">Schedule<br/>
       <label>&nbsp;</label>
@@ -184,6 +184,49 @@
       <label for="node-input-costUnit"><i class="fa fa-dollar"></i> Unit</label>
       <input type="text" id="node-input-costUnit" />
     </div>
+</script>
+
+<script type="text/x-red" data-help-name="smartplug-in">
+<p>Query the Edimax Smartplug for device information, schedule, status and costs.</p>
+<h3>Node properties</h3>
+<dl class="message-properties">
+    <dt>Name<span class="property-type">string</span></dt>
+        <dd>Name of this node</dd>
+    <dt>Topic<span class="property-type">string</span></dt>
+        <dd>Topic for this node</dd>
+    <dt>Device<span class="property-type">string</span></dt>
+        <dd>IP Address with auth configuration. The Username is always <strong>admin</strong>. Set the password in the mobile app.</dd>
+    <dt>Interval<span class="property-type">number</span></dt>
+        <dd>Query Interval in milliseconds</dd>
+    <dt>Outputs<span class="property-type">checkbox</span></dt>
+        <dd>Device information to include in msg.payload object</dd>
+    <dt>Cost factor<span class="property-type">float</span></dt>
+        <dd>Electricity cost factor</dd>
+    <dt>Monetary unit symbol<span class="property-type">string</span></dt>
+        <dd>Local monetary unit symbol</dd>
+</dl>
+<h3>Outputs</h3>
+<dl class="message-properties">
+    <dt>payload<span class="property-type">object</span></dt>
+    <dd>An object contains multiple properties that
+        provide information about the Smartplug.
+        <ul>
+         <li><code>deviceinfo</code> - an object containing the vendor, model, firmware version, MAC Address.</li>
+         <li><code>schedule</code> - an object containing an array of encoded strings for each day of the week.
+         <ul>
+          <li>An empty string <strong>or</strong></li>
+          <li>Char 1 is the start Hour 0-23 represented as [0-9,a-n]</li>
+          <li>Char 2 is the start Minute 0-59 represented as [0-9,a-z,A-X]</li>
+          <li>Char 3 is the end Hour 0-23 represented as [0-9,a-n]</li>
+          <li>Char 4 is the end Minute 0-59 represented as [0-9,a-z,A-X]</li>
+          <li>Char 5 is a 1</li>
+          </ul>
+         <li><code>status</code> - an object containing the On/Off State, On/Off state of the schedule,
+          power consumption (W), current, power consumption (kWh) over the past day, week, month, last toggle time. </li>
+         <li><code>cost</code> - power cost over the past day, week, month and the monetary unit symbol.</li>
+        </ul>
+    </dd>
+    </dl>
 </script>
 
 <script type="text/javascript">
@@ -222,4 +265,28 @@
       <label><i class="fa fa-external-link"></i>Outputs</label>
       <input type="checkbox" id="node-input-response" style="display: inline-block; width: auto; vertical-align: top;">Return the new state?<br/>
     </div>
+</script>
+<script type="text/x-red" data-help-name="smartplug-out">
+<p>Toggle the Edimax Smartplug on or off.</p>
+<h3>Input</h3>
+<dl class="message-properties">
+    <dt>Boolean or string<span class="property-type">boolean|string</span></dt>
+        <dd>Boolean true/false or string "on"/"off" or string "true"/"false"</dd>
+</dl>
+<h3>Node properties</h3>
+<dl class="message-properties">
+    <dt>Name<span class="property-type">string</span></dt>
+        <dd>Name of this node</dd>
+    <dt>Topic<span class="property-type">string</span></dt>
+        <dd>Topic for this node</dd>
+    <dt>Device<span class="property-type">string</span></dt>
+        <dd>IP Address with auth configuration. The Username is always admin. Set the password in the mobile app.</dd>
+    <dt>Outputs<span class="property-type">checkbox</span></dt>
+        <dd>Return the new state</dd>
+</dl>
+<h3>Outputs</h3>
+<dl class="message-properties">
+    <dt>payload<span class="property-type">boolean</span></dt>
+    <dd>Return the new state of the outlet</dd>
+    </dl>
 </script>
